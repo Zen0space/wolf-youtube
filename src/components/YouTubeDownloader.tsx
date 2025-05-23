@@ -19,6 +19,13 @@ const Title = styled.h1`
   margin-bottom: 1rem;
 `;
 
+const Subtitle = styled.p`
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+`;
+
 const InputSection = styled.div`
   display: flex;
   flex-direction: column;
@@ -41,68 +48,22 @@ const Input = styled.input`
   }
 `;
 
-const QualitySection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const QualityLabel = styled.label`
-  font-weight: 600;
-  color: #333;
-`;
-
-const Select = styled.select`
-  padding: 0.75rem;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  background-color: white;
-  cursor: pointer;
-
-  &:focus {
-    border-color: #ff0000;
-    outline: none;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-  }
-`;
-
-const Button = styled.button<{ variant?: 'primary' | 'secondary' | 'download' }>`
+const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   padding: 1rem 2rem;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  flex: 1;
-  min-width: 150px;
+  width: 100%;
   
-  background-color: ${props => {
-    switch(props.variant) {
-      case 'secondary': return '#28a745';
-      case 'download': return '#007bff';
-      default: return '#ff0000';
-    }
-  }};
+  background-color: ${props => 
+    props.variant === 'secondary' ? '#28a745' : '#ff0000'};
   color: white;
 
   &:hover:not(:disabled) {
-    background-color: ${props => {
-      switch(props.variant) {
-        case 'secondary': return '#218838';
-        case 'download': return '#0056b3';
-        default: return '#cc0000';
-      }
-    }};
+    background-color: ${props => 
+      props.variant === 'secondary' ? '#218838' : '#cc0000'};
   }
 `;
 
@@ -127,6 +88,62 @@ const StatusText = styled.p<{ type?: 'success' | 'error' | 'info' }>`
   word-break: break-word;
 `;
 
+const VideoInfoCard = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-top: 1rem;
+`;
+
+const VideoTitle = styled.h2`
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+`;
+
+const VideoMeta = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const MetaItem = styled.div`
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+`;
+
+const MetaLabel = styled.div`
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+`;
+
+const MetaValue = styled.div`
+  color: #333;
+  font-size: 1rem;
+`;
+
+const Thumbnail = styled.img`
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+`;
+
+const InfoText = styled.div`
+  background: #e7f3ff;
+  border: 1px solid #bee5eb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #0c5460;
+`;
+
 const ProgressBar = styled.div<{ progress: number }>`
   width: 100%;
   height: 20px;
@@ -145,42 +162,30 @@ const ProgressBar = styled.div<{ progress: number }>`
   }
 `;
 
-const DownloadLink = styled.a`
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background-color: #007bff;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 600;
-  margin-top: 0.5rem;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-interface VideoFormat {
-  format_id: string;
-  quality: string;
-  ext: string;
-  filesize?: number;
-}
-
-const YouTubeDownloader: React.FC = () => {
+const YouTubeInfoTool: React.FC = () => {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [videoFormats, setVideoFormats] = useState<VideoFormat[]>([]);
-  const [audioFormats, setAudioFormats] = useState<VideoFormat[]>([]);
-  const [selectedVideoQuality, setSelectedVideoQuality] = useState('');
-  const [selectedAudioQuality, setSelectedAudioQuality] = useState('');
-  const [downloadUrl, setDownloadUrl] = useState('');
+  const [videoInfo, setVideoInfo] = useState<any>(null);
 
   const addStatus = (message: string) => {
     setStatus(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
+  };
+
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatViews = (views: number) => {
+    if (views >= 1000000) {
+      return `${(views / 1000000).toFixed(1)}M`;
+    } else if (views >= 1000) {
+      return `${(views / 1000).toFixed(1)}K`;
+    }
+    return views.toString();
   };
 
   const getVideoInfo = async () => {
@@ -192,67 +197,10 @@ const YouTubeDownloader: React.FC = () => {
     try {
       setIsLoading(true);
       setStatus([]);
-      setVideoFormats([]);
-      setAudioFormats([]);
-      setDownloadUrl('');
+      setVideoInfo(null);
+      setProgress(0);
       
       addStatus('Fetching video information...');
-      
-      const response = await fetch('/.netlify/functions/video-info', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: url.trim() })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch video info');
-      }
-
-      const info = await response.json();
-      addStatus(`Title: ${info.title || 'Unknown'}`);
-      addStatus(`Duration: ${info.duration || 'Unknown'} seconds`);
-      addStatus(`Uploader: ${info.uploader || 'Unknown'}`);
-      
-      if (info.videoFormats && info.videoFormats.length > 0) {
-        setVideoFormats(info.videoFormats);
-        setSelectedVideoQuality(info.videoFormats[0].format_id);
-        addStatus(`Found ${info.videoFormats.length} video quality options`);
-      }
-      
-      if (info.audioFormats && info.audioFormats.length > 0) {
-        setAudioFormats(info.audioFormats);
-        setSelectedAudioQuality(info.audioFormats[0].format_id);
-        addStatus(`Found ${info.audioFormats.length} audio quality options`);
-      }
-      
-    } catch (error) {
-      addStatus(`Error: ${error instanceof Error ? error.message : 'Failed to get video info'}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const downloadVideo = async (format: 'mp4' | 'mp3') => {
-    if (!url.trim()) {
-      addStatus('Please enter a valid YouTube URL');
-      return;
-    }
-
-    const quality = format === 'mp4' ? selectedVideoQuality : selectedAudioQuality;
-    
-    if (!quality) {
-      addStatus('Please get video info first to select quality');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setProgress(0);
-      setDownloadUrl('');
-      
-      addStatus(`Generating ${format.toUpperCase()} download link...`);
       
       // Simulate progress
       const progressInterval = setInterval(() => {
@@ -265,36 +213,30 @@ const YouTubeDownloader: React.FC = () => {
         });
       }, 300);
 
-      const response = await fetch('/.netlify/functions/download', {
+      const response = await fetch('/.netlify/functions/video-info', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          url: url.trim(),
-          format: format,
-          quality: quality
-        })
+        body: JSON.stringify({ url: url.trim() })
       });
 
       clearInterval(progressInterval);
       setProgress(100);
 
       if (!response.ok) {
-        throw new Error('Download failed');
+        throw new Error('Failed to fetch video info');
       }
 
-      const result = await response.json();
+      const info = await response.json();
+      setVideoInfo(info);
       
-      addStatus(result.message);
-      if (result.note) {
-        addStatus(result.note);
-      }
-      
-      setDownloadUrl(result.downloadUrl);
+      addStatus('✅ Video information retrieved successfully!');
+      addStatus(`Found ${info.videoFormats?.length || 0} video formats available`);
+      addStatus(`Found ${info.audioFormats?.length || 0} audio formats available`);
       
     } catch (error) {
-      addStatus(`Error: ${error instanceof Error ? error.message : 'Download failed'}`);
+      addStatus(`❌ Error: ${error instanceof Error ? error.message : 'Failed to get video info'}`);
     } finally {
       setIsLoading(false);
       setTimeout(() => setProgress(0), 2000);
@@ -303,12 +245,17 @@ const YouTubeDownloader: React.FC = () => {
 
   return (
     <Container>
-      <Title>🎬 YouTube Downloader</Title>
+      <Title>📺 YouTube Video Info Tool</Title>
+      <Subtitle>Get detailed information about any YouTube video</Subtitle>
+      
+      <InfoText>
+        <strong>ℹ️ About this tool:</strong> This tool provides detailed information about YouTube videos including metadata, available formats, and quality options. It's designed for educational and research purposes only.
+      </InfoText>
       
       <InputSection>
         <Input
           type="url"
-          placeholder="Enter YouTube URL here..."
+          placeholder="Enter YouTube URL here... (e.g., https://www.youtube.com/watch?v=...)"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           disabled={isLoading}
@@ -319,78 +266,91 @@ const YouTubeDownloader: React.FC = () => {
           disabled={isLoading}
           variant="secondary"
         >
-          📋 Get Video Info & Quality Options
+          {isLoading ? '🔄 Analyzing...' : '🔍 Get Video Information'}
         </Button>
-
-        {videoFormats.length > 0 && (
-          <QualitySection>
-            <QualityLabel>Video Quality:</QualityLabel>
-            <Select 
-              value={selectedVideoQuality} 
-              onChange={(e) => setSelectedVideoQuality(e.target.value)}
-              disabled={isLoading}
-            >
-              {videoFormats.map((format) => (
-                <option key={format.format_id} value={format.format_id}>
-                  {format.quality} ({format.ext})
-                  {format.filesize && ` - ${(format.filesize / 1024 / 1024).toFixed(1)}MB`}
-                </option>
-              ))}
-            </Select>
-          </QualitySection>
-        )}
-
-        {audioFormats.length > 0 && (
-          <QualitySection>
-            <QualityLabel>Audio Quality:</QualityLabel>
-            <Select 
-              value={selectedAudioQuality} 
-              onChange={(e) => setSelectedAudioQuality(e.target.value)}
-              disabled={isLoading}
-            >
-              {audioFormats.map((format) => (
-                <option key={format.format_id} value={format.format_id}>
-                  {format.quality} ({format.ext})
-                  {format.filesize && ` - ${(format.filesize / 1024 / 1024).toFixed(1)}MB`}
-                </option>
-              ))}
-            </Select>
-          </QualitySection>
-        )}
-        
-        <ButtonGroup>
-          <Button 
-            onClick={() => downloadVideo('mp4')}
-            disabled={isLoading || !selectedVideoQuality}
-          >
-            🎥 Generate MP4 Link
-          </Button>
-          <Button 
-            onClick={() => downloadVideo('mp3')}
-            disabled={isLoading || !selectedAudioQuality}
-          >
-            🎵 Generate MP3 Link
-          </Button>
-        </ButtonGroup>
-
-        {downloadUrl && (
-          <DownloadLink href={downloadUrl} target="_blank" rel="noopener noreferrer">
-            📥 Download File
-          </DownloadLink>
-        )}
       </InputSection>
 
       {progress > 0 && (
         <ProgressBar progress={progress} />
       )}
 
+      {videoInfo && (
+        <VideoInfoCard>
+          <VideoTitle>{videoInfo.title}</VideoTitle>
+          
+          {videoInfo.thumbnail && (
+            <Thumbnail src={videoInfo.thumbnail} alt="Video thumbnail" />
+          )}
+          
+          <VideoMeta>
+            <MetaItem>
+              <MetaLabel>👤 Channel</MetaLabel>
+              <MetaValue>{videoInfo.uploader || 'Unknown'}</MetaValue>
+            </MetaItem>
+            
+            <MetaItem>
+              <MetaLabel>⏱️ Duration</MetaLabel>
+              <MetaValue>{videoInfo.duration ? formatDuration(videoInfo.duration) : 'Unknown'}</MetaValue>
+            </MetaItem>
+            
+            <MetaItem>
+              <MetaLabel>👁️ Views</MetaLabel>
+              <MetaValue>{videoInfo.view_count ? formatViews(videoInfo.view_count) : 'Unknown'}</MetaValue>
+            </MetaItem>
+            
+            <MetaItem>
+              <MetaLabel>📅 Upload Date</MetaLabel>
+              <MetaValue>{videoInfo.upload_date || 'Unknown'}</MetaValue>
+            </MetaItem>
+            
+            <MetaItem>
+              <MetaLabel>🎥 Video Formats</MetaLabel>
+              <MetaValue>{videoInfo.videoFormats?.length || 0} available</MetaValue>
+            </MetaItem>
+            
+            <MetaItem>
+              <MetaLabel>🎵 Audio Formats</MetaLabel>
+              <MetaValue>{videoInfo.audioFormats?.length || 0} available</MetaValue>
+            </MetaItem>
+          </VideoMeta>
+
+          {videoInfo.videoFormats && videoInfo.videoFormats.length > 0 && (
+            <div style={{ marginTop: '1rem' }}>
+              <h3>Available Video Qualities:</h3>
+              <ul>
+                {videoInfo.videoFormats.map((format: any, index: number) => (
+                  <li key={index}>
+                    {format.quality} ({format.ext})
+                    {format.filesize && ` - ${(format.filesize / 1024 / 1024).toFixed(1)}MB`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {videoInfo.audioFormats && videoInfo.audioFormats.length > 0 && (
+            <div style={{ marginTop: '1rem' }}>
+              <h3>Available Audio Qualities:</h3>
+              <ul>
+                {videoInfo.audioFormats.map((format: any, index: number) => (
+                  <li key={index}>
+                    {format.quality} ({format.ext})
+                    {format.filesize && ` - ${(format.filesize / 1024 / 1024).toFixed(1)}MB`}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </VideoInfoCard>
+      )}
+
       <StatusSection>
         {status.length === 0 ? (
-          <StatusText>Ready to download YouTube videos. Enter a URL above and click "Get Video Info" to start.</StatusText>
+          <StatusText>Ready to analyze YouTube videos. Enter a URL above and click "Get Video Information" to start.</StatusText>
         ) : (
           status.map((message, index) => {
-            const type = message.includes('Error:') ? 'error' : 
-                        message.includes('completed successfully') || message.includes('Title:') || message.includes('Found') ? 'success' : 'info';
+            const type = message.includes('❌') ? 'error' : 
+                        message.includes('✅') || message.includes('Found') ? 'success' : 'info';
             return (
               <StatusText key={index} type={type}>
                 {message}
@@ -403,4 +363,4 @@ const YouTubeDownloader: React.FC = () => {
   );
 };
 
-export default YouTubeDownloader; 
+export default YouTubeInfoTool; 

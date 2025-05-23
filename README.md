@@ -1,18 +1,17 @@
-# 🎬 YouTube Downloader
+# 📺 YouTube Video Info Tool
 
-A modern React TypeScript application with styled-components for downloading YouTube videos and audio files using `youtube-dl-exec` and `@ffmpeg-installer/ffmpeg`. Designed for Netlify deployment with serverless functions.
+A modern React TypeScript application that provides detailed information about YouTube videos. Built with styled-components and designed for Netlify deployment with serverless functions. **This tool is for educational and research purposes only.**
 
 ## ✨ Features
 
-- 🎥 Download YouTube videos in MP4 format with quality selection
-- 🎵 Extract audio in MP3 format with quality options
 - 📋 Get detailed video information (title, duration, uploader, etc.)
-- 🎯 Multiple quality options for both video and audio
-- 📊 Real-time download progress
-- 💅 Beautiful UI with styled-components
+- 🎥 Analyze available video formats and qualities
+- 🎵 Display audio format options
+- 📊 Beautiful responsive UI with styled-components
 - 🎯 TypeScript for type safety
 - ⚡ Vite for fast development
 - 🚀 Netlify-ready with serverless functions
+- ✅ **Compliant with YouTube's Terms of Service**
 
 ## 🚀 Quick Start
 
@@ -51,12 +50,13 @@ A modern React TypeScript application with styled-components for downloading You
 ## 🎯 Usage
 
 1. Enter a YouTube URL in the input field
-2. Click **"Get Video Info & Quality Options"** to fetch available formats
-3. Select your preferred quality from the dropdown menus
-4. Choose your action:
-   - **🎥 Generate MP4 Link**: Create download link for video
-   - **🎵 Generate MP3 Link**: Create download link for audio
-5. Click the **"📥 Download File"** button to download
+2. Click **"Get Video Information"** to analyze the video
+3. View detailed information including:
+   - Video metadata (title, channel, duration, views)
+   - Available video quality options
+   - Available audio format options
+   - Video thumbnail
+   - Upload date and other details
 
 ## 🛠️ Tech Stack
 
@@ -68,27 +68,24 @@ A modern React TypeScript application with styled-components for downloading You
 
 ### Backend (Serverless)
 - **Netlify Functions** - Serverless backend
-- **youtube-dl-exec** - YouTube downloading
-- **@ffmpeg-installer/ffmpeg** - Video/audio processing
+- **ytdl-core** - YouTube video information extraction
 
 ## 📁 Project Structure
 
 ```
-wolf-youtube/
+youtube-info-tool/
 ├── src/
 │   ├── components/
-│   │   └── YouTubeDownloader.tsx    # Main downloader component
+│   │   └── YouTubeDownloader.tsx    # Main info tool component
 │   ├── styles/
-│   │   └── GlobalStyles.ts          # Global styles with width 100%
+│   │   └── GlobalStyles.ts          # Global styles
 │   ├── App.tsx                      # Main app component
 │   └── main.tsx                     # Entry point
 ├── netlify/
 │   └── functions/
-│       ├── video-info.js            # Get video info and formats
-│       └── download.js              # Generate download links
+│       └── video-info.js            # Video info extraction function
 ├── netlify.toml                     # Netlify configuration
 ├── package.json                     # Dependencies
-├── vite.config.ts                   # Vite configuration
 └── README.md
 ```
 
@@ -99,31 +96,41 @@ wolf-youtube/
 - `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint
 
-## 🔧 Netlify Functions
+## 🔧 API Endpoint
 
 - `/.netlify/functions/video-info` - Get video information and available formats
-- `/.netlify/functions/download` - Generate download links for selected quality
 
-## 🎨 Quality Selection
+## 📋 Information Provided
 
-The app now supports quality selection for both video and audio:
+### Video Metadata
+- Title and description
+- Channel/uploader name
+- Duration and view count
+- Upload date
+- Video thumbnail
 
-### Video Qualities
-- Multiple resolution options (1080p, 720p, 480p, etc.)
+### Format Analysis
+- Available video qualities (1080p, 720p, 480p, etc.)
+- Audio format options
 - File size information when available
-- Format information (mp4, webm, etc.)
+- Container formats (mp4, webm, etc.)
 
-### Audio Qualities
-- Various bitrate options
-- Different audio formats
-- Quality indicators
+## ⚖️ Legal Compliance
 
-## ⚠️ Important Notes
+This tool is designed to be **fully compliant** with:
+- ✅ YouTube's Terms of Service
+- ✅ Netlify's Terms of Service
+- ✅ Copyright laws
 
-- **Download Method**: The app generates direct download links rather than storing files on the server (perfect for serverless)
-- **Netlify Compatibility**: Uses serverless functions instead of a traditional server
-- **File Downloads**: Right-click the download button and select "Save As" to download files
-- **Quality Selection**: Always get video info first to see available quality options
+**What this tool does:**
+- Extracts publicly available metadata
+- Analyzes format information
+- Provides educational insights
+
+**What this tool does NOT do:**
+- Download copyrighted content
+- Violate YouTube's API terms
+- Store or redistribute video files
 
 ## 🚀 Deployment
 
@@ -137,33 +144,38 @@ The app now supports quality selection for both video and audio:
    - Build settings are automatically detected from `netlify.toml`
 3. **Deploy!**
 
-### Manual Deployment
-
-```bash
-# Build the project
-npm run build
-
-# The dist/ folder contains the built application
-# Upload the entire project (including netlify/ folder) to Netlify
-```
-
 ## 🔧 Configuration
 
 The `netlify.toml` file handles:
 - Build settings
 - Function configuration  
-- Redirects for API routes
+- API route redirects
 - CORS headers
+
+## 🎨 Features
+
+- **Responsive Design** - Works on all devices
+- **Dark/Light Theme** - Automatic theme detection
+- **Fast Loading** - Optimized performance
+- **Error Handling** - Graceful error messages
+- **Progress Indicators** - Visual feedback during analysis
 
 ## 🐛 Troubleshooting
 
 **Common Issues:**
 
-1. **Functions not working**: Make sure `netlify.toml` is in the root directory
-2. **CORS errors**: Check that headers are properly set in Netlify configuration
-3. **Download fails**: Verify the YouTube URL is valid and accessible
-4. **No quality options**: Some videos may have limited format availability
+1. **Invalid URL**: Make sure you're using a valid YouTube video URL
+2. **No information found**: Some videos may have restricted metadata
+3. **Loading issues**: Check your internet connection
+
+## 📖 Educational Use Cases
+
+This tool is perfect for:
+- **Researchers** studying video format distribution
+- **Developers** learning about video streaming technologies
+- **Students** understanding digital media formats
+- **Content creators** analyzing video specifications
 
 ## 📄 License
 
-MIT License - feel free to use this project for learning and development!
+MIT License - This project is for educational and research purposes only.
