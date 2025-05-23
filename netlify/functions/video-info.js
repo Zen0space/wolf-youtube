@@ -1,4 +1,4 @@
-const youtubedl = require('youtube-dl-exec');
+const ytdl = require('@distube/ytdl-core');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -41,39 +41,46 @@ exports.handler = async (event, context) => {
 
     console.log('Fetching info for:', url);
     
-    // Configure youtube-dl-exec to use yt-dlp
-    const info = await youtubedl(url, {
-      dumpSingleJson: true,
-      noCheckCertificates: true,
-      noWarnings: true,
-      preferFreeFormats: true,
-      addHeader: ['referer:youtube.com', 'user-agent:googlebot']
-    });
+    // Validate YouTube URL
+    if (!ytdl.validateURL(url)) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ error: 'Invalid YouTube URL' }),
+      };
+    }
 
-    // Get available formats for quality selection
-    const formats = info.formats || [];
+    // Get video info
+    const info = await ytdl.getInfo(url);
     
-    // Filter and sort video formats
-    const videoFormats = formats
-      .filter(f => f.ext === 'mp4' && f.height && f.vcodec !== 'none')
+    // Extract video formats
+    const videoFormats = info.formats
+      .filter(format => format.hasVideo && format.hasAudio && format.container === 'mp4')
       .sort((a, b) => (b.height || 0) - (a.height || 0))
-      .map(f => ({
-        format_id: f.format_id,
-        quality: f.height + 'p',
-        ext: f.ext,
-        filesize: f.filesize
-      }));
+      .map(format => ({
+        format_id: format.itag.toString(),
+        quality: format.qualityLabel || `${format.height}p`,
+        ext: format.container,
+        filesize: format.contentLength ? parseInt(format.contentLength) : null
+      }))
+      .slice(0, 5);
 
-    // Filter and sort audio formats
-    const audioFormats = formats
-      .filter(f => f.acodec && f.acodec !== 'none' && f.vcodec === 'none')
-      .sort((a, b) => (b.abr || 0) - (a.abr || 0))
-      .map(f => ({
-        format_id: f.format_id,
-        quality: f.abr ? f.abr + 'kbps' : 'audio',
-        ext: f.ext,
-        filesize: f.filesize
-      }));
+    // Extract audio formats
+    const audioFormats = info.formats
+      .filter(format => format.hasAudio && !format.hasVideo)
+      .sort((a, b) => (b.audioBitrate || 0) - (a.audioBitrate || 0))
+      .map(format => ({
+        format_id: format.itag.toString(),
+        quality: format.audioBitrate ? `${format.audioBitrate}kbps` : 'audio',
+        ext: format.container,
+        filesize: format.contentLength ? parseInt(format.contentLength) : null
+      }))
+      .slice(0, 3);
+
+    const videoDetails = info.videoDetails;
 
     return {
       statusCode: 200,
@@ -83,15 +90,15 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        title: info.title,
-        duration: info.duration,
-        uploader: info.uploader,
-        description: info.description,
-        thumbnail: info.thumbnail,
-        view_count: info.view_count,
-        upload_date: info.upload_date,
-        videoFormats: videoFormats.slice(0, 5), // Limit to top 5 quality options
-        audioFormats: audioFormats.slice(0, 3)  // Limit to top 3 audio options
+        title: videoDetails.title,
+        duration: parseInt(videoDetails.lengthSeconds),
+        uploader: videoDetails.author?.name,
+        description: videoDetails.shortDescription,
+        thumbnail: videoDetails.thumbnails?.[0]?.url,
+        view_count: parseInt(videoDetails.viewCount),
+        upload_date: videoDetails.uploadDate,
+        videoFormats,
+        audioFormats
       }),
     };
 

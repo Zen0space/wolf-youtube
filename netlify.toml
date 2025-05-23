@@ -1,5 +1,5 @@
 [build]
-  command = "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o yt-dlp && chmod +x yt-dlp && npm run build"
+  command = "npm run build"
   functions = "netlify/functions"
   publish = "dist"
 

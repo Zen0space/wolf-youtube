@@ -1,4 +1,4 @@
-const youtubedl = require('youtube-dl-exec');
+const ytdl = require('@distube/ytdl-core');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -52,36 +52,57 @@ exports.handler = async (event, context) => {
 
     console.log(`Starting ${format} download for:`, url, 'Quality:', quality);
 
-    let options = {
-      noCheckCertificates: true,
-      noWarnings: true,
-      preferFreeFormats: true,
-      addHeader: ['referer:youtube.com', 'user-agent:googlebot']
-    };
-
-    if (format === 'mp3') {
-      // For audio extraction
-      options = {
-        ...options,
-        extractAudio: true,
-        audioFormat: 'mp3',
-        audioQuality: quality || 0, // Best quality by default
+    // Validate YouTube URL
+    if (!ytdl.validateURL(url)) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ error: 'Invalid YouTube URL' }),
       };
-    } else {
-      // For video (mp4)
-      if (quality) {
-        options.format = quality; // Use specific quality format ID
-      } else {
-        options.format = 'best[ext=mp4]/best';
-      }
-      options.mergeOutputFormat = 'mp4';
     }
 
-    // Get download URL instead of downloading file (for Netlify compatibility)
-    const downloadUrl = await youtubedl(url, {
-      ...options,
-      getUrl: true
-    });
+    // Get video info to find the specific format
+    const info = await ytdl.getInfo(url);
+    
+    let selectedFormat;
+    
+    if (format === 'mp4') {
+      // Find video format by quality (itag)
+      selectedFormat = info.formats.find(f => f.itag.toString() === quality);
+      
+      if (!selectedFormat) {
+        // Fallback to best video+audio mp4
+        selectedFormat = info.formats
+          .filter(f => f.hasVideo && f.hasAudio && f.container === 'mp4')
+          .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+      }
+    } else {
+      // Find audio format by quality (itag)
+      selectedFormat = info.formats.find(f => f.itag.toString() === quality);
+      
+      if (!selectedFormat) {
+        // Fallback to best audio-only format
+        selectedFormat = info.formats
+          .filter(f => f.hasAudio && !f.hasVideo)
+          .sort((a, b) => (b.audioBitrate || 0) - (a.audioBitrate || 0))[0];
+      }
+    }
+
+    if (!selectedFormat) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ error: 'No suitable format found' }),
+      };
+    }
+
+    const downloadUrl = selectedFormat.url;
 
     return {
       statusCode: 200,
@@ -94,7 +115,8 @@ exports.handler = async (event, context) => {
         success: true,
         downloadUrl: downloadUrl,
         message: `${format.toUpperCase()} download link generated successfully!`,
-        note: 'Click the download button to get your file.'
+        note: 'Click the download button to get your file.',
+        filename: `${info.videoDetails.title.replace(/[^a-zA-Z0-9]/g, '_')}.${format}`
       }),
     };
 
