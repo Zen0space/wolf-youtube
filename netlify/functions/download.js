@@ -1,4 +1,4 @@
-const ytdl = require('@distube/ytdl-core');
+const ytdl = require('ytdl-core');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -64,24 +64,43 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Get video info to find the specific format
-    const info = await ytdl.getInfo(url);
+    // Get video info with timeout
+    const info = await Promise.race([
+      ytdl.getInfo(url),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: Video info request took too long')), 25000)
+      )
+    ]);
     
     let selectedFormat;
+    let downloadUrl;
     
     if (format === 'mp4') {
       // Find video format by quality (itag)
-      selectedFormat = info.formats.find(f => f.itag.toString() === quality);
+      if (quality) {
+        selectedFormat = info.formats.find(f => f.itag.toString() === quality);
+      }
       
       if (!selectedFormat) {
         // Fallback to best video+audio mp4
         selectedFormat = info.formats
           .filter(f => f.hasVideo && f.hasAudio && f.container === 'mp4')
-          .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+          .sort((a, b) => {
+            const aHeight = parseInt(a.qualityLabel?.replace('p', '')) || 0;
+            const bHeight = parseInt(b.qualityLabel?.replace('p', '')) || 0;
+            return bHeight - aHeight;
+          })[0];
+      }
+      
+      if (selectedFormat) {
+        downloadUrl = selectedFormat.url;
       }
     } else {
-      // Find audio format by quality (itag)
-      selectedFormat = info.formats.find(f => f.itag.toString() === quality);
+      // For MP3, we need to provide a different approach since ytdl-core doesn't directly convert to MP3
+      // Instead, we'll provide the best audio format and let the user know it's not MP3
+      if (quality) {
+        selectedFormat = info.formats.find(f => f.itag.toString() === quality);
+      }
       
       if (!selectedFormat) {
         // Fallback to best audio-only format
@@ -89,20 +108,31 @@ exports.handler = async (event, context) => {
           .filter(f => f.hasAudio && !f.hasVideo)
           .sort((a, b) => (b.audioBitrate || 0) - (a.audioBitrate || 0))[0];
       }
+      
+      if (selectedFormat) {
+        downloadUrl = selectedFormat.url;
+      }
     }
 
-    if (!selectedFormat) {
+    if (!selectedFormat || !downloadUrl) {
       return {
         statusCode: 400,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ error: 'No suitable format found' }),
+        body: JSON.stringify({ error: 'No suitable format found for download' }),
       };
     }
 
-    const downloadUrl = selectedFormat.url;
+    // Generate a clean filename
+    const cleanTitle = info.videoDetails.title
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '_') // Replace spaces with underscores
+      .substring(0, 50); // Limit length
+
+    const fileExtension = format === 'mp3' ? (selectedFormat.container || 'webm') : 'mp4';
+    const filename = `${cleanTitle}.${fileExtension}`;
 
     return {
       statusCode: 200,
@@ -115,8 +145,12 @@ exports.handler = async (event, context) => {
         success: true,
         downloadUrl: downloadUrl,
         message: `${format.toUpperCase()} download link generated successfully!`,
-        note: 'Click the download button to get your file.',
-        filename: `${info.videoDetails.title.replace(/[^a-zA-Z0-9]/g, '_')}.${format}`
+        note: format === 'mp3' ? 
+          'Note: This is the best audio format available. You may need to convert to MP3 using online tools.' : 
+          'Click the download button to get your video file.',
+        filename: filename,
+        actualFormat: selectedFormat.container || fileExtension,
+        quality: selectedFormat.qualityLabel || `${selectedFormat.audioBitrate}kbps`
       }),
     };
 
@@ -131,7 +165,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ 
         error: 'Download failed',
         details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        type: error.name || 'Unknown'
       }),
     };
   }

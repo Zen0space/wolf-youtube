@@ -1,4 +1,4 @@
-const ytdl = require('@distube/ytdl-core');
+const ytdl = require('ytdl-core');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -53,29 +53,47 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Get video info
-    const info = await ytdl.getInfo(url);
+    // Get video info with timeout to prevent function hanging
+    const info = await Promise.race([
+      ytdl.getInfo(url),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: Video info request took too long')), 25000)
+      )
+    ]);
     
-    // Extract video formats
+    // Extract video formats (mp4 with video and audio)
     const videoFormats = info.formats
-      .filter(format => format.hasVideo && format.hasAudio && format.container === 'mp4')
-      .sort((a, b) => (b.height || 0) - (a.height || 0))
+      .filter(format => 
+        format.hasVideo && 
+        format.hasAudio && 
+        format.container === 'mp4' &&
+        format.qualityLabel
+      )
+      .sort((a, b) => {
+        const aHeight = parseInt(a.qualityLabel?.replace('p', '')) || 0;
+        const bHeight = parseInt(b.qualityLabel?.replace('p', '')) || 0;
+        return bHeight - aHeight;
+      })
       .map(format => ({
         format_id: format.itag.toString(),
-        quality: format.qualityLabel || `${format.height}p`,
-        ext: format.container,
+        quality: format.qualityLabel,
+        ext: 'mp4',
         filesize: format.contentLength ? parseInt(format.contentLength) : null
       }))
       .slice(0, 5);
 
-    // Extract audio formats
+    // Extract audio formats (audio only)
     const audioFormats = info.formats
-      .filter(format => format.hasAudio && !format.hasVideo)
+      .filter(format => 
+        format.hasAudio && 
+        !format.hasVideo &&
+        format.audioBitrate
+      )
       .sort((a, b) => (b.audioBitrate || 0) - (a.audioBitrate || 0))
       .map(format => ({
         format_id: format.itag.toString(),
-        quality: format.audioBitrate ? `${format.audioBitrate}kbps` : 'audio',
-        ext: format.container,
+        quality: `${format.audioBitrate}kbps`,
+        ext: format.container || 'webm',
         filesize: format.contentLength ? parseInt(format.contentLength) : null
       }))
       .slice(0, 3);
@@ -94,7 +112,7 @@ exports.handler = async (event, context) => {
         duration: parseInt(videoDetails.lengthSeconds),
         uploader: videoDetails.author?.name,
         description: videoDetails.shortDescription,
-        thumbnail: videoDetails.thumbnails?.[0]?.url,
+        thumbnail: videoDetails.thumbnails?.[videoDetails.thumbnails.length - 1]?.url,
         view_count: parseInt(videoDetails.viewCount),
         upload_date: videoDetails.uploadDate,
         videoFormats,
@@ -113,7 +131,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ 
         error: 'Failed to fetch video information',
         details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        type: error.name || 'Unknown'
       }),
     };
   }
