@@ -11,19 +11,16 @@ export const GlobalStyles = createGlobalStyle`
     width: 100%;
     height: 100%;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
     color: #333;
+    overflow-x: hidden;
   }
 
   #root {
     width: 100%;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
   }
 
   input, button, textarea, select {
-    width: 100%;
     font-family: inherit;
     font-size: 14px;
     border: none;
@@ -33,10 +30,10 @@ export const GlobalStyles = createGlobalStyle`
   button {
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-  }
-
-  button:hover {
-    opacity: 0.8;
+    background: none;
+    border: none;
+    padding: 0;
+    width: auto;
   }
 
   button:disabled {
