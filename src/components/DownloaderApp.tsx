@@ -170,16 +170,30 @@ const DownloaderApp: React.FC = () => {
       setError(null);
       setSuccess(null);
       
-      // Create a download link that triggers the download
-      const link = document.createElement('a');
-      link.href = '/.netlify/functions/download-file';
-      link.download = releaseInfo.fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      console.log('Starting download...');
       
-      setSuccess(`Download started: ${releaseInfo.fileName}`);
+      // Create a download link that opens the download function in a new tab
+      // This prevents navigation issues and allows the download to work properly
+      const downloadUrl = '/.netlify/functions/download-file';
+      
+      // Open in new window/tab to handle the download
+      const downloadWindow = window.open(downloadUrl, '_blank');
+      
+      // Check if popup was blocked
+      if (!downloadWindow) {
+        // Fallback: create a direct link
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      setSuccess(`Download initiated: ${releaseInfo.fileName}`);
     } catch (err) {
+      console.error('Download error:', err);
       setError(err instanceof Error ? err.message : 'Download failed');
     } finally {
       setDownloading(false);
