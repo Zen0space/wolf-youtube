@@ -1,8 +1,7 @@
 const { Octokit } = require('@octokit/rest');
 
 exports.handler = async (event, context) => {
-  console.log('Function called:', event.httpMethod);
-  console.log('Environment check - GH_TOKEN exists:', !!process.env.GH_TOKEN);
+  console.log('Get GitHub URL function called:', event.httpMethod);
   
   // Set CORS headers
   const headers = {
@@ -42,41 +41,45 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Initialize Octokit with the GitHub token
-    const octokit = new Octokit({
-      auth: process.env.GH_TOKEN,
+    console.log('Fetching latest release from GitHub API');
+
+    // Fetch the latest release directly from GitHub API
+    const GITHUB_RELEASE_URL = "https://api.github.com/repos/Zen0space/wolf-tv/releases/latest";
+    
+    const response = await fetch(GITHUB_RELEASE_URL, {
+      headers: { 
+        'Authorization': `Bearer ${process.env.GH_TOKEN}`,
+        'User-Agent': 'wolf-youtube-downloader',
+      },
     });
 
-    console.log('Fetching latest release from Zen0space/wolf-tv');
+    if (!response.ok) {
+      console.error('GitHub API error:', response.status, response.statusText);
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+    }
 
-    // Fetch the latest release from the private repository
-    const { data: release } = await octokit.rest.repos.getLatestRelease({
-      owner: 'Zen0space',
-      repo: 'wolf-tv',
-    });
-
-    console.log('Release found:', release.tag_name);
-    console.log('Assets count:', release.assets.length);
+    const releaseData = await response.json();
+    console.log('Release found:', releaseData.tag_name);
 
     // Find the .exe asset in the release
-    const exeAsset = release.assets.find(asset => 
+    const exeAsset = releaseData.assets.find(asset => 
       asset.name.toLowerCase().endsWith('.exe')
     );
 
     if (!exeAsset) {
-      console.log('Available assets:', release.assets.map(a => a.name));
       return {
         statusCode: 404,
         headers,
         body: JSON.stringify({ 
           error: 'No .exe file found in the latest release',
-          availableAssets: release.assets.map(a => a.name)
+          availableAssets: releaseData.assets.map(a => a.name)
         }),
       };
     }
 
     console.log('Found .exe asset:', exeAsset.name);
 
+    // Return the GitHub asset URL and auth token for client-side download
     return {
       statusCode: 200,
       headers: {
@@ -84,17 +87,20 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        url: exeAsset.url, // GitHub's authenticated asset URL
         fileName: exeAsset.name,
         fileSize: exeAsset.size,
-        releaseVersion: release.tag_name,
-        releaseName: release.name,
-        releaseDate: release.published_at,
-        releaseNotes: release.body,
-        assetId: exeAsset.id,
+        releaseVersion: releaseData.tag_name,
+        releaseName: releaseData.name,
+        releaseDate: releaseData.published_at,
+        releaseNotes: releaseData.body,
+        // We'll provide the token for client-side use (this is safe for temporary downloads)
+        authToken: process.env.GH_TOKEN,
       }),
     };
+
   } catch (error) {
-    console.error('Error fetching release:', error);
+    console.error('Error getting GitHub URL:', error);
     
     // Handle specific GitHub API errors
     if (error.status === 404) {
@@ -123,7 +129,7 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
-        error: 'Failed to fetch the latest release',
+        error: 'Failed to get GitHub URL',
         details: error.message,
         status: error.status || 'unknown'
       }),

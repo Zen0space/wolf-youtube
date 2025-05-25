@@ -122,13 +122,14 @@ const SuccessMessage = styled.div`
 `;
 
 interface ReleaseInfo {
-  downloadUrl: string;
   fileName: string;
   fileSize: number;
   releaseVersion: string;
   releaseName: string;
   releaseDate: string;
   releaseNotes: string;
+  url: string;
+  authToken: string;
 }
 
 const DownloaderApp: React.FC = () => {
@@ -147,8 +148,22 @@ const DownloaderApp: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/.netlify/functions/download-exe');
-      const data = await response.json();
+      console.log('Fetching release info from GitHub...');
+      const response = await fetch('/.netlify/functions/get-github-url');
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const text = await response.text();
+      console.log('Response text:', text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        throw new Error(`Invalid JSON response: ${text.substring(0, 100)}...`);
+      }
       
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch release information');
@@ -156,6 +171,7 @@ const DownloaderApp: React.FC = () => {
       
       setReleaseInfo(data);
     } catch (err) {
+      console.error('Fetch error:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
@@ -170,28 +186,39 @@ const DownloaderApp: React.FC = () => {
       setError(null);
       setSuccess(null);
       
-      console.log('Starting download...');
+      console.log('Starting direct GitHub download...');
+      console.log('Download URL:', releaseInfo.url);
       
-      // Create a download link that opens the download function in a new tab
-      // This prevents navigation issues and allows the download to work properly
-      const downloadUrl = '/.netlify/functions/download-file';
+      // Download directly from GitHub with authentication
+      const response = await fetch(releaseInfo.url, { 
+        headers: { 
+          'Authorization': `Bearer ${releaseInfo.authToken}`,
+          'Accept': 'application/octet-stream',
+          'User-Agent': 'wolf-youtube-downloader',
+        }
+      });
       
-      // Open in new window/tab to handle the download
-      const downloadWindow = window.open(downloadUrl, '_blank');
-      
-      // Check if popup was blocked
-      if (!downloadWindow) {
-        // Fallback: create a direct link
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
       }
       
-      setSuccess(`Download initiated: ${releaseInfo.fileName}`);
+      console.log('File downloaded, creating blob...');
+      const blob = await response.blob();
+      
+      console.log('Blob created, size:', blob.size, 'bytes');
+      
+      // Trigger browser download
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = releaseInfo.fileName;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      URL.revokeObjectURL(link.href);
+      document.body.removeChild(link);
+      
+      setSuccess(`Download completed: ${releaseInfo.fileName}`);
     } catch (err) {
       console.error('Download error:', err);
       setError(err instanceof Error ? err.message : 'Download failed');
