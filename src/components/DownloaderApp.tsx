@@ -128,8 +128,6 @@ interface ReleaseInfo {
   releaseName: string;
   releaseDate: string;
   releaseNotes: string;
-  url: string;
-  authToken: string;
 }
 
 const DownloaderApp: React.FC = () => {
@@ -186,39 +184,28 @@ const DownloaderApp: React.FC = () => {
       setError(null);
       setSuccess(null);
       
-      console.log('Starting direct GitHub download...');
-      console.log('Download URL:', releaseInfo.url);
+      console.log('Starting download redirect...');
       
-      // Download directly from GitHub with authentication
-      const response = await fetch(releaseInfo.url, { 
-        headers: { 
-          'Authorization': `Bearer ${releaseInfo.authToken}`,
-          'Accept': 'application/octet-stream',
-          'User-Agent': 'wolf-youtube-downloader',
-        }
-      });
+      // Open the download redirect function in a new tab
+      // This avoids CORS issues and lets the server handle the GitHub authentication
+      const downloadUrl = '/.netlify/functions/download-redirect';
       
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+      // Open in new window/tab to handle the download
+      const downloadWindow = window.open(downloadUrl, '_blank');
+      
+      // Check if popup was blocked
+      if (!downloadWindow) {
+        // Fallback: create a direct link
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
       
-      console.log('File downloaded, creating blob...');
-      const blob = await response.blob();
-      
-      console.log('Blob created, size:', blob.size, 'bytes');
-      
-      // Trigger browser download
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = releaseInfo.fileName;
-      document.body.appendChild(link);
-      link.click();
-      
-      // Cleanup
-      URL.revokeObjectURL(link.href);
-      document.body.removeChild(link);
-      
-      setSuccess(`Download completed: ${releaseInfo.fileName}`);
+      setSuccess(`Download initiated: ${releaseInfo.fileName}`);
     } catch (err) {
       console.error('Download error:', err);
       setError(err instanceof Error ? err.message : 'Download failed');

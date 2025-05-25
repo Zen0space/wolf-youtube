@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
 
     console.log('Found .exe asset:', exeAsset.name);
 
-    // Return the GitHub asset URL and auth token for client-side download
+    // Return just the release information for display
     return {
       statusCode: 200,
       headers: {
@@ -87,15 +87,12 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        url: exeAsset.url, // GitHub's authenticated asset URL
         fileName: exeAsset.name,
         fileSize: exeAsset.size,
         releaseVersion: releaseData.tag_name,
         releaseName: releaseData.name,
         releaseDate: releaseData.published_at,
         releaseNotes: releaseData.body,
-        // We'll provide the token for client-side use (this is safe for temporary downloads)
-        authToken: process.env.GH_TOKEN,
       }),
     };
 
