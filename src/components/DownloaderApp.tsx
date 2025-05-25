@@ -121,6 +121,27 @@ const SuccessMessage = styled.div`
   border: 1px solid #c3e6cb;
 `;
 
+const BackButton = styled.button`
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+`;
+
 interface ReleaseInfo {
   fileName: string;
   fileSize: number;
@@ -130,7 +151,11 @@ interface ReleaseInfo {
   releaseNotes: string;
 }
 
-const DownloaderApp: React.FC = () => {
+interface DownloaderAppProps {
+  onBackToHome?: () => void;
+}
+
+const DownloaderApp: React.FC<DownloaderAppProps> = ({ onBackToHome }) => {
   const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -231,6 +256,11 @@ const DownloaderApp: React.FC = () => {
 
   return (
     <Container>
+      {onBackToHome && (
+        <BackButton onClick={onBackToHome}>
+          ← Back to Home
+        </BackButton>
+      )}
       <Card>
         <Title>Wolf YouTube Downloader</Title>
         <Subtitle>
