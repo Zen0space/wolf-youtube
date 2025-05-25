@@ -1,181 +1,107 @@
-# 📺 YouTube Video Info Tool
+# Wolf YouTube Downloader Web App
 
-A modern React TypeScript application that provides detailed information about YouTube videos. Built with styled-components and designed for Netlify deployment with serverless functions. **This tool is for educational and research purposes only.**
+A modern web application that allows users to download the latest version of the Wolf YouTube Downloader executable from a private GitHub repository.
 
-## ✨ Features
+## Features
 
-- 📋 Get detailed video information (title, duration, uploader, etc.)
-- 🎥 Analyze available video formats and qualities
-- 🎵 Display audio format options
-- 📊 Beautiful responsive UI with styled-components
-- 🎯 TypeScript for type safety
-- ⚡ Vite for fast development
-- 🚀 Netlify-ready with serverless functions
-- ✅ **Compliant with YouTube's Terms of Service**
+- 🚀 **Always Up-to-Date**: Automatically fetches the latest release from the private repository
+- 📱 **Modern UI**: Beautiful, responsive interface with smooth animations
+- 🔒 **Secure**: Uses GitHub Personal Access Token for private repository access
+- 📊 **Release Information**: Shows version, file size, release notes, and more
+- ⬇️ **Direct Download**: One-click download of the executable file
 
-## 🚀 Quick Start
+## Setup
 
 ### Prerequisites
 
-- Node.js (version 14 or higher)
-- npm or yarn
+- Node.js 18+ 
+- A GitHub Personal Access Token with access to private repositories
 
-### Local Development
+### Installation
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd wolf-youtube
+```
 
-2. **Start development server:**
-   ```bash
-   npm run dev
-   ```
+2. Install dependencies:
+```bash
+npm install
+```
 
-3. **Open your browser and go to `http://localhost:5173`**
+3. Set up environment variables:
+Create a `.env` file in the root directory with:
+```
+GH_TOKEN=your_github_personal_access_token_here
+```
 
-### Netlify Deployment
+To create a GitHub Personal Access Token:
+1. Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
+2. Click "Generate new token (classic)"
+3. Select the `repo` scope for private repository access
+4. Copy the generated token and add it to your `.env` file
 
-1. **Build the project:**
-   ```bash
-   npm run build
-   ```
+### Development
 
-2. **Deploy to Netlify:**
-   - Connect your GitHub repository to Netlify
-   - Set build command: `npm run build`
-   - Set publish directory: `dist`
-   - Deploy!
+Run the development server:
+```bash
+npm run dev
+```
 
-## 🎯 Usage
+### Deployment
 
-1. Enter a YouTube URL in the input field
-2. Click **"Get Video Information"** to analyze the video
-3. View detailed information including:
-   - Video metadata (title, channel, duration, views)
-   - Available video quality options
-   - Available audio format options
-   - Video thumbnail
-   - Upload date and other details
+This app is designed to be deployed on Netlify with serverless functions.
 
-## 🛠️ Tech Stack
+1. Build the project:
+```bash
+npm run build
+```
 
-### Frontend
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **Styled Components** - CSS-in-JS styling
+2. Deploy to Netlify and set the `GH_TOKEN` environment variable in your Netlify site settings.
 
-### Backend (Serverless)
-- **Netlify Functions** - Serverless backend
-- **ytdl-core** - YouTube video information extraction
+## How It Works
 
-## 📁 Project Structure
+1. **Frontend**: React app with a modern UI that displays release information
+2. **Backend**: Netlify functions that:
+   - Fetch the latest release from the private GitHub repository
+   - Provide authenticated download access to the executable file
+3. **Authentication**: Uses GitHub Personal Access Token to access private repository
+
+## API Endpoints
+
+- `/.netlify/functions/download-exe` - GET: Fetches release information
+- `/.netlify/functions/download-file` - GET: Downloads the executable file
+
+## Repository Structure
 
 ```
-youtube-info-tool/
+wolf-youtube/
 ├── src/
 │   ├── components/
-│   │   └── YouTubeDownloader.tsx    # Main info tool component
+│   │   └── DownloaderApp.tsx    # Main download interface
 │   ├── styles/
-│   │   └── GlobalStyles.ts          # Global styles
-│   ├── App.tsx                      # Main app component
-│   └── main.tsx                     # Entry point
+│   └── App.tsx
 ├── netlify/
 │   └── functions/
-│       └── video-info.js            # Video info extraction function
-├── netlify.toml                     # Netlify configuration
-├── package.json                     # Dependencies
-└── README.md
+│       ├── download-exe.js      # Fetches release info
+│       └── download-file.js     # Handles file download
+├── public/
+└── package.json
 ```
 
-## 📦 Available Scripts
+## Environment Variables
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build locally
-- `npm run lint` - Run ESLint
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `GH_TOKEN` | GitHub Personal Access Token with repo access | Yes |
 
-## 🔧 API Endpoint
+## Security Notes
 
-- `/.netlify/functions/video-info` - Get video information and available formats
+- The GitHub token is only used server-side in Netlify functions
+- Private repository access is handled securely without exposing credentials to the client
+- All downloads are proxied through the serverless functions for security
 
-## 📋 Information Provided
+## License
 
-### Video Metadata
-- Title and description
-- Channel/uploader name
-- Duration and view count
-- Upload date
-- Video thumbnail
-
-### Format Analysis
-- Available video qualities (1080p, 720p, 480p, etc.)
-- Audio format options
-- File size information when available
-- Container formats (mp4, webm, etc.)
-
-## ⚖️ Legal Compliance
-
-This tool is designed to be **fully compliant** with:
-- ✅ YouTube's Terms of Service
-- ✅ Netlify's Terms of Service
-- ✅ Copyright laws
-
-**What this tool does:**
-- Extracts publicly available metadata
-- Analyzes format information
-- Provides educational insights
-
-**What this tool does NOT do:**
-- Download copyrighted content
-- Violate YouTube's API terms
-- Store or redistribute video files
-
-## 🚀 Deployment
-
-### Netlify Deployment (Recommended)
-
-1. **Fork/Clone this repository**
-2. **Connect to Netlify:**
-   - Go to [Netlify Dashboard](https://app.netlify.com)
-   - Click "New site from Git"
-   - Select your repository
-   - Build settings are automatically detected from `netlify.toml`
-3. **Deploy!**
-
-## 🔧 Configuration
-
-The `netlify.toml` file handles:
-- Build settings
-- Function configuration  
-- API route redirects
-- CORS headers
-
-## 🎨 Features
-
-- **Responsive Design** - Works on all devices
-- **Dark/Light Theme** - Automatic theme detection
-- **Fast Loading** - Optimized performance
-- **Error Handling** - Graceful error messages
-- **Progress Indicators** - Visual feedback during analysis
-
-## 🐛 Troubleshooting
-
-**Common Issues:**
-
-1. **Invalid URL**: Make sure you're using a valid YouTube video URL
-2. **No information found**: Some videos may have restricted metadata
-3. **Loading issues**: Check your internet connection
-
-## 📖 Educational Use Cases
-
-This tool is perfect for:
-- **Researchers** studying video format distribution
-- **Developers** learning about video streaming technologies
-- **Students** understanding digital media formats
-- **Content creators** analyzing video specifications
-
-## 📄 License
-
-MIT License - This project is for educational and research purposes only.
+This project is private and proprietary.

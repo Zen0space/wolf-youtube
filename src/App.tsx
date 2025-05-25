@@ -1,11 +1,11 @@
 import { GlobalStyles } from './styles/GlobalStyles';
-import YouTubeInfoTool from './components/YouTubeDownloader';
+import DownloaderApp from './components/DownloaderApp';
 
 function App() {
   return (
     <>
       <GlobalStyles />
-      <YouTubeInfoTool />
+      <DownloaderApp />
     </>
   );
 }
