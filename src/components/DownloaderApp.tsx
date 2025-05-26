@@ -153,9 +153,10 @@ interface ReleaseInfo {
 
 interface DownloaderAppProps {
   onBackToHome?: () => void;
+  onGoToPremium?: () => void;
 }
 
-const DownloaderApp: React.FC<DownloaderAppProps> = ({ onBackToHome }) => {
+const DownloaderApp: React.FC<DownloaderAppProps> = ({ onBackToHome, onGoToPremium }) => {
   const [releaseInfo, setReleaseInfo] = useState<ReleaseInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
@@ -342,6 +343,18 @@ const DownloaderApp: React.FC<DownloaderAppProps> = ({ onBackToHome }) => {
             >
               {downloading ? 'Downloading...' : `Download ${releaseInfo.fileName}`}
             </DownloadButton>
+
+            {onGoToPremium && (
+              <DownloadButton 
+                onClick={onGoToPremium}
+                style={{
+                  background: 'linear-gradient(135deg, #1a2a6c 0%, #b21f1f 100%)',
+                  marginTop: '15px'
+                }}
+              >
+                Upgrade to Premium
+              </DownloadButton>
+            )}
           </>
         )}
 

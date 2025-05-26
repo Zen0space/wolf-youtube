@@ -103,8 +103,15 @@ const CTAButton = styled.button`
   }
 `;
 
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+`;
+
 const PricingSection = styled.section`
-  padding: 100px 20px 120px;
+  padding: 60px 20px 70px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(15px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -114,7 +121,7 @@ const SectionTitle = styled.h2`
   font-size: 3.5rem;
   font-weight: 800;
   text-align: center;
-  margin-bottom: 100px;
+  margin-bottom: 50px; /* Reduced margin for shorter section */
   background: linear-gradient(135deg, #ffffff 0%, #ffd700 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -122,7 +129,7 @@ const SectionTitle = styled.h2`
   
   @media (max-width: 768px) {
     font-size: 2.8rem;
-    margin-bottom: 80px;
+    margin-bottom: 40px;
   }
 `;
 
@@ -145,7 +152,7 @@ const PlanCard = styled.div<{ isPremium?: boolean }>`
     : 'rgba(255, 255, 255, 0.12)'};
   color: ${props => props.isPremium ? '#333' : 'white'};
   border-radius: 30px;
-  padding: 60px 45px;
+  padding: 40px 35px; /* Reduced padding for shorter cards */
   text-align: center;
   backdrop-filter: blur(20px);
   border: ${props => props.isPremium ? '3px solid #ffd700' : '2px solid rgba(255, 255, 255, 0.2)'};
@@ -199,7 +206,7 @@ const PlanDescription = styled.p`
 const FeatureList = styled.ul`
   list-style: none;
   padding: 0;
-  margin: 50px 0;
+  margin: 30px 0; /* Reduced margin for shorter feature list */
   text-align: left;
 `;
 
@@ -231,15 +238,7 @@ const PlanButton = styled(CTAButton)<{ isPremium?: boolean }>`
   font-size: 1.3rem;
 `;
 
-const ComingSoonBadge = styled.span`
-  background: #ff9500;
-  color: white;
-  padding: 8px 18px;
-  border-radius: 25px;
-  font-size: 1rem;
-  font-weight: 700;
-  margin-left: 18px;
-`;
+// We don't need a separate badge component since we're using inline styles for the discount
 
 const WhyChooseSection = styled.section`
   padding: 120px 20px;
@@ -402,9 +401,10 @@ const ReviewText = styled.p`
 
 interface HomepageProps {
   onTryFree: () => void;
+  onGoToPremium: () => void;
 }
 
-const Homepage: React.FC<HomepageProps> = ({ onTryFree }) => {
+const Homepage: React.FC<HomepageProps> = ({ onTryFree, onGoToPremium }) => {
   const reviews = [
     {
       name: "Ahmad Faiz",
@@ -475,13 +475,22 @@ const Homepage: React.FC<HomepageProps> = ({ onTryFree }) => {
           <span style={{ color: '#ffd700' }}>Like a Wolf</span>
         </HeroTitle>
         <HeroSubtitle>
-          Fast, reliable, and powerful YouTube downloader. 
-          Get your favorite videos in high quality with just one click.
+          Fast, reliable, and powerful YouTube downloader. Get your favorite videos in high quality with just one click.
           No ads, no limits, just pure downloading power.
         </HeroSubtitle>
-        <CTAButton onClick={onTryFree}>
-          🚀 Try Free Version
-        </CTAButton>
+        <ButtonContainer>
+          <CTAButton onClick={onTryFree}>
+            Try Free Version
+          </CTAButton>
+          <CTAButton 
+            onClick={onGoToPremium}
+            style={{
+              background: 'linear-gradient(135deg, #1a2a6c 0%, #b21f1f 100%)'
+            }}
+          >
+            Get Premium
+          </CTAButton>
+        </ButtonContainer>
       </HeroSection>
 
       <WhyChooseSection>
@@ -540,8 +549,10 @@ const Homepage: React.FC<HomepageProps> = ({ onTryFree }) => {
             <PlanBadge>Most Popular</PlanBadge>
             <PlanTitle>Premium Version</PlanTitle>
             <PlanPrice>
-              $9.99
-              <ComingSoonBadge>Coming Soon</ComingSoonBadge>
+              RM 23.20
+              <span style={{ fontSize: '1rem', fontWeight: 'normal', textDecoration: 'line-through', opacity: 0.7, marginRight: '10px' }}>
+                RM 50.00
+              </span>
             </PlanPrice>
             <PlanDescription>
               For power users who need advanced features and maximum quality
@@ -556,8 +567,8 @@ const Homepage: React.FC<HomepageProps> = ({ onTryFree }) => {
               <FeatureItem available>Subtitle downloads</FeatureItem>
               <FeatureItem available>Priority support</FeatureItem>
             </FeatureList>
-            <PlanButton isPremium disabled>
-              Coming Soon
+            <PlanButton isPremium onClick={onGoToPremium}>
+              Get Premium
             </PlanButton>
           </PlanCard>
         </ComparisonContainer>
