@@ -1,13 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background-color: #1A1F2B;">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/icon-wolf.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wolf Downloader</title>
+    <style>
+      /* Prevent white flash during page load and navigation */
+      html, body, #root {
+        background-color: #1A1F2B;
+      }
+      /* Fix for the 'Most Popular' badge being cut in half */
+      [role="plan-badge"] {
+        position: absolute !important;
+        top: -15px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 999 !important;
+        padding: 12px 30px !important;
+        background-color: #00D87A !important;
+        color: white !important;
+        border-radius: 50px !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+      }
+
+      [role="plan-card"] {
+        margin-top: 15px !important;
+        overflow: visible !important;
+        position: relative !important;
+      }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
+  <body style="background-color: #1A1F2B; margin: 0;">
+    <div id="root" style="background-color: #1A1F2B;"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

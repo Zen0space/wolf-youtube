@@ -1,64 +1,65 @@
 import React from 'react';
 import styled from 'styled-components';
+import { FloatingNavbar, Button, Footer } from '../components/ui';
+import '../styles/BadgeFix.css';
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #2c3e50 0%, #1a1a1a 100%);
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: ${({ theme }) => theme.colors.background.main};
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-family: ${({ theme }) => theme.typography.fontFamily};
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 600px;
+    background: linear-gradient(to bottom, rgba(0, 216, 122, 0.1), transparent);
+    z-index: 0;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 600px;
+    background-image: radial-gradient(rgba(0, 216, 122, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    z-index: 0;
+    opacity: 0.4;
+  }
 `;
 
-const Header = styled.header`
-  padding: 25px 0;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-`;
 
-const LogoContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-`;
-
-const LogoIcon = styled.img`
-  width: 50px;
-  height: 50px;
-  filter: brightness(0) invert(1);
-`;
-
-const Logo = styled.h1`
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0;
-  color: white;
-`;
 
 const HeroSection = styled.section`
-  padding: 80px 20px 120px;
+  padding: 180px 20px 120px;
   text-align: center;
   max-width: 1200px;
   margin: 0 auto;
-  min-height: calc(100vh - 140px);
+  min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  z-index: 1;
 `;
 
 const HeroTitle = styled.h1`
-  font-size: 4.5rem;
+  font-size: 3.8rem;
   font-weight: 900;
   margin-bottom: 35px;
   line-height: 1.1;
-  background: linear-gradient(135deg, #ffffff 0%, #ffd700 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   
   @media (max-width: 768px) {
-    font-size: 3rem;
+    font-size: 2.5rem;
   }
 `;
 
@@ -77,31 +78,7 @@ const HeroSubtitle = styled.p`
   }
 `;
 
-const CTAButton = styled.button`
-  background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
-  color: white;
-  border: none;
-  padding: 22px 55px;
-  border-radius: 60px;
-  font-size: 1.4rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.4s ease;
-  margin: 0 auto;
-  box-shadow: 0 15px 35px rgba(0, 212, 170, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 45px rgba(0, 212, 170, 0.5);
-    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
-  }
-
-  &:active {
-    transform: translateY(-2px);
-  }
-`;
+// CTAButton replaced with the Button component from UI folder
 
 const ButtonContainer = styled.div`
   display: flex;
@@ -112,20 +89,47 @@ const ButtonContainer = styled.div`
 
 const PricingSection = styled.section`
   padding: 60px 20px 70px;
-  background: rgba(255, 255, 255, 0.08);
+  background: ${({ theme }) => theme.colors.background.main};
   backdrop-filter: blur(15px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(0, 216, 122, 0.05), transparent 70%);
+    pointer-events: none;
+  }
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 3.5rem;
-  font-weight: 800;
+  font-size: ${({ theme }) => theme.typography.sizes.h2};
+  font-weight: ${({ theme }) => theme.typography.weights.bold};
   text-align: center;
   margin-bottom: 50px; /* Reduced margin for shorter section */
-  background: linear-gradient(135deg, #ffffff 0%, #ffd700 100%);
+  background-image: linear-gradient(135deg, ${({ theme }) => theme.colors.text.primary} 0%, ${({ theme }) => theme.colors.accent} 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  position: relative;
+  z-index: 1;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: ${({ theme }) => theme.colors.accent};
+    border-radius: 2px;
+  }
   
   @media (max-width: 768px) {
     font-size: 2.8rem;
@@ -147,26 +151,37 @@ const ComparisonContainer = styled.div`
 `;
 
 const PlanCard = styled.div<{ isPremium?: boolean }>`
-  background: ${props => props.isPremium 
-    ? 'linear-gradient(135deg, #ffd700 0%, #ffb347 100%)' 
-    : 'rgba(255, 255, 255, 0.12)'};
-  color: ${props => props.isPremium ? '#333' : 'white'};
-  border-radius: 30px;
+  background: ${props => props.theme.colors.background.main};
+  color: ${props => props.isPremium ? props.theme.colors.text.accent : props.theme.colors.text.primary};
+  border-radius: ${props => props.theme.borderRadius.large};
   padding: 40px 35px; /* Reduced padding for shorter cards */
   text-align: center;
   backdrop-filter: blur(20px);
-  border: ${props => props.isPremium ? '3px solid #ffd700' : '2px solid rgba(255, 255, 255, 0.2)'};
+  border: ${props => props.isPremium 
+    ? `2px solid ${props.theme.colors.accent}` 
+    : `1px solid ${props.theme.colors.border}`};
   position: relative;
-  transition: all 0.4s ease;
-  box-shadow: ${props => props.isPremium 
-    ? '0 25px 50px rgba(255, 215, 0, 0.3)' 
-    : '0 25px 50px rgba(0, 0, 0, 0.2)'};
+  transition: ${props => props.theme.transitions.medium};
+  box-shadow: ${props => props.theme.colors.shadow};
+  overflow: visible;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: ${props => props.isPremium 
+      ? `radial-gradient(circle at top right, rgba(0, 216, 122, 0.15), transparent 70%)` 
+      : `radial-gradient(circle at top right, rgba(0, 216, 122, 0.05), transparent 70%)`};
+    pointer-events: none;
+    z-index: 0;
+  }
 
   &:hover {
     transform: translateY(-10px);
-    box-shadow: ${props => props.isPremium 
-      ? '0 35px 70px rgba(255, 215, 0, 0.4)' 
-      : '0 35px 70px rgba(0, 0, 0, 0.3)'};
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
   }
 `;
 
@@ -175,13 +190,14 @@ const PlanBadge = styled.div`
   top: -25px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
-  color: white;
+  background: ${({ theme }) => theme.colors.button.primary.bg};
+  color: ${({ theme }) => theme.colors.button.primary.text};
   padding: 12px 30px;
-  border-radius: 30px;
+  border-radius: ${({ theme }) => theme.borderRadius.large};
   font-size: 1.1rem;
-  font-weight: 700;
-  box-shadow: 0 10px 25px rgba(0, 212, 170, 0.4);
+  font-weight: ${({ theme }) => theme.typography.weights.bold};
+  box-shadow: ${({ theme }) => theme.colors.shadow};
+  z-index: 5;
 `;
 
 const PlanTitle = styled.h3`
@@ -217,33 +233,75 @@ const FeatureItem = styled.li<{ available?: boolean }>`
   text-decoration: ${props => props.available ? 'none' : 'line-through'};
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 1;
   
   &:before {
     content: '${props => props.available ? '✓' : '✗'}';
-    color: ${props => props.available ? '#4CAF50' : '#f44336'};
+    color: ${props => props.available ? props.theme.colors.primary : '#f44336'};
     font-weight: bold;
     margin-right: 18px;
     font-size: 1.4rem;
     min-width: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: ${props => props.available ? 'rgba(67, 97, 238, 0.1)' : 'rgba(244, 67, 54, 0.1)'};
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
   }
 `;
 
-const PlanButton = styled(CTAButton)<{ isPremium?: boolean }>`
+const PlanButton = styled(Button)<{ isPremium?: boolean }>`
   background: ${props => props.isPremium 
-    ? 'linear-gradient(135deg, #333 0%, #555 100%)' 
-    : 'linear-gradient(135deg, #00d4aa 0%, #00b894 100%)'};
+    ? props.theme.colors.button.primary.hover 
+    : props.theme.colors.button.primary.bg};
   width: 100%;
   margin-top: 40px;
   padding: 20px 45px;
   font-size: 1.3rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+    z-index: -1;
+  }
+  
+  &:hover::after {
+    transform: translateX(100%);
+  }
 `;
 
 // We don't need a separate badge component since we're using inline styles for the discount
 
 const WhyChooseSection = styled.section`
   padding: 120px 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: ${({ theme }) => theme.colors.background.main};
   backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at bottom left, rgba(0, 216, 122, 0.15), transparent 70%);
+    pointer-events: none;
+  }
 `;
 
 const BenefitsGrid = styled.div`
@@ -258,16 +316,38 @@ const BenefitsGrid = styled.div`
 const BenefitCard = styled.div`
   text-align: center;
   padding: 40px 30px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 25px;
+  background: ${({ theme }) => theme.colors.background.main};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
   backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.4s ease;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  transition: ${({ theme }) => theme.transitions.medium};
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(0, 216, 122, 0.08), transparent 60%);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    z-index: -1;
+  }
 
   &:hover {
     transform: translateY(-8px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    background: ${({ theme }) => theme.colors.background.main};
+    box-shadow: ${({ theme }) => theme.colors.shadow};
+    
+    &::before {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 `;
 
@@ -281,22 +361,49 @@ const BenefitTitle = styled.h3`
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 20px;
-  color: #ffd700;
+  color: ${({ theme }) => theme.colors.accent};
+  position: relative;
+  display: inline-block;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: ${({ theme }) => theme.colors.primary};
+    border-radius: 2px;
+    opacity: 0.6;
+  }
 `;
 
 const BenefitDescription = styled.p`
   font-size: 1.2rem;
   line-height: 1.6;
   opacity: 0.9;
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const ReviewsSection = styled.section`
   padding: 120px 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: ${({ theme }) => theme.colors.background.main};
   backdrop-filter: blur(15px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
   overflow: hidden;
   position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top center, rgba(0, 216, 122, 0.08), transparent 60%);
+    pointer-events: none;
+  }
 `;
 
 const ReviewsWrapper = styled.div`
@@ -325,19 +432,42 @@ const ReviewsContainer = styled.div`
 `;
 
 const ReviewCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  background: ${({ theme }) => theme.colors.background.main};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
   padding: 30px;
   min-width: 380px;
   max-width: 380px;
   backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  transition: ${({ theme }) => theme.transitions.medium};
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50px;
+    height: 50px;
+    background: ${({ theme }) => theme.colors.primary};
+    opacity: 0.1;
+    border-radius: 0 0 50px 0;
+    transition: all 0.3s ease;
+  }
 
   &:hover {
     transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    background: ${({ theme }) => theme.colors.background.main};
+    box-shadow: ${({ theme }) => theme.colors.shadow};
+    
+    &::before {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      opacity: 0.05;
+    }
   }
 
   @media (max-width: 768px) {
@@ -363,8 +493,9 @@ const ReviewAvatar = styled.div<{ bgColor: string }>`
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
+  font-weight: ${({ theme }) => theme.typography.weights.bold};
+  color: ${({ theme }) => theme.colors.text.primary};
+  box-shadow: ${({ theme }) => theme.colors.shadow};
 `;
 
 const ReviewUserInfo = styled.div`
@@ -375,28 +506,31 @@ const ReviewUserName = styled.h4`
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0 0 5px 0;
-  color: white;
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const ReviewUserTitle = styled.p`
   font-size: 0.9rem;
   margin: 0;
-  opacity: 0.7;
-  color: #00d4aa;
+  opacity: 0.8;
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const ReviewStars = styled.div`
-  color: #ffd700;
+  color: ${({ theme }) => theme.colors.accent};
   font-size: 1.2rem;
   margin-bottom: 15px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 `;
 
 const ReviewText = styled.p`
   font-size: 1rem;
   line-height: 1.6;
   margin: 0;
-  opacity: 0.9;
+  color: ${({ theme }) => theme.colors.text.secondary};
   font-style: italic;
+  position: relative;
+  z-index: 1;
 `;
 
 interface HomepageProps {
@@ -461,35 +595,35 @@ const Homepage: React.FC<HomepageProps> = ({ onTryFree, onGoToPremium }) => {
 
   return (
     <Container>
-      <Header>
-        <LogoContainer>
-          <LogoIcon src="/icon-wolf.png" alt="Wolf" />
-          <Logo>Wolf YouTube Downloader</Logo>
-        </LogoContainer>
-      </Header>
+      <FloatingNavbar onDownloadClick={onTryFree} currentPage="home" />
 
       <HeroSection>
         <HeroTitle>
           Download YouTube Videos
           <br />
-          <span style={{ color: '#ffd700' }}>Like a Wolf</span>
+          <span>Like a Wolf</span>
         </HeroTitle>
         <HeroSubtitle>
           Fast, reliable, and powerful YouTube downloader. Get your favorite videos in high quality with just one click.
           No ads, no limits, just pure downloading power.
         </HeroSubtitle>
         <ButtonContainer>
-          <CTAButton onClick={onTryFree}>
+          <Button 
+            variant='outline'
+            size='large'
+            onClick={onTryFree}
+            style={{ margin: '0 15px' }}
+          >
             Try Free Version
-          </CTAButton>
-          <CTAButton 
+          </Button>
+          <Button 
+            variant='primary'
+            size='large'
             onClick={onGoToPremium}
-            style={{
-              background: 'linear-gradient(135deg, #1a2a6c 0%, #b21f1f 100%)'
-            }}
+            style={{ margin: '0 15px' }}
           >
             Get Premium
-          </CTAButton>
+          </Button>
         </ButtonContainer>
       </HeroSection>
 
@@ -545,8 +679,8 @@ const Homepage: React.FC<HomepageProps> = ({ onTryFree, onGoToPremium }) => {
             </PlanButton>
           </PlanCard>
 
-          <PlanCard isPremium>
-            <PlanBadge>Most Popular</PlanBadge>
+          <PlanCard isPremium className="plan-card" role="plan-card">
+            <PlanBadge className="plan-badge" role="plan-badge">Most Popular</PlanBadge>
             <PlanTitle>Premium Version</PlanTitle>
             <PlanPrice>
               RM 23.20
@@ -598,6 +732,7 @@ const Homepage: React.FC<HomepageProps> = ({ onTryFree, onGoToPremium }) => {
           </ReviewsContainer>
         </ReviewsWrapper>
       </ReviewsSection>
+      <Footer />
     </Container>
   );
 };
