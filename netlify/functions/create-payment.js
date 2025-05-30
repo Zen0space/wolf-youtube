@@ -1,4 +1,5 @@
-const { createClient } = require('@libsql/client');
+// Only import what we need
+// const { createClient } = require('@libsql/client');
 
 exports.handler = async (event, context) => {
   console.log('Create payment function called:', event.httpMethod);
@@ -31,7 +32,10 @@ exports.handler = async (event, context) => {
   try {
     // Use Stripe MCP to create a payment link with success and cancel URLs
     // This is a simplified version that uses a pre-created price ID
+    // Make sure this price ID is valid and accessible
     const priceId = 'price_1RSyPkJz2f0nYpSKBtQFL0kI';
+    
+    console.log('Using price ID:', priceId);
     
     // Get the host from the request headers
     const host = event.headers.host || 'localhost:8888';
@@ -45,7 +49,10 @@ exports.handler = async (event, context) => {
     
     // In a real implementation, we would create a Stripe Checkout session with these URLs
     // For now, we'll use the pre-created payment link and append our success URL as a query parameter
+    // Make sure this payment link is valid and accessible
     const paymentLinkUrl = `https://buy.stripe.com/8x2aEYd0ueCZ05w1rhgnK01?redirect_success_url=${encodeURIComponent(successUrl)}`;
+    
+    console.log('Generated payment link URL:', paymentLinkUrl);
     
     // Generate a unique session ID to track this payment
     const sessionId = 'sess_' + Math.random().toString(36).substring(2, 15);
@@ -64,12 +71,19 @@ exports.handler = async (event, context) => {
 
   } catch (error) {
     console.error('Error creating payment:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Log more details about the request to help with debugging
+    console.log('Request headers:', JSON.stringify(event.headers));
+    console.log('Request body:', event.body);
+    
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({ 
         error: 'Failed to create payment',
-        details: error.message
+        details: error.message,
+        stack: error.stack
       })
     };
   }
